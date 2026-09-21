@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
 import '../../checkout/screens/checkout_screen.dart';
+import '../../checkout/screens/receipt_screen.dart';
+import '../../settings/screens/settings_screen.dart';
 import '../providers/pos_provider.dart';
 import '../widgets/pos_header.dart';
 import '../widgets/category_tabs.dart';
@@ -86,7 +88,7 @@ class PosDashboardScreen extends ConsumerWidget {
                         crossAxisCount: 2,
                         mainAxisSpacing: 14,
                         crossAxisSpacing: 14,
-                        childAspectRatio: 0.72,
+                        childAspectRatio: 0.65,
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -131,7 +133,17 @@ class PosDashboardScreen extends ConsumerWidget {
             activeIndex: posState.activeNavIndex,
             onTabSelected: (index) {
               posNotifier.setActiveNavIndex(index);
-              if (index != 0) {
+              if (index == 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ReceiptScreen()),
+                );
+              } else if (index == 3) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              } else if (index != 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Navigasi ke tab: ${['Kasir POS', 'Pesanan', 'Laporan', 'Pengaturan'][index]}')),
                 );

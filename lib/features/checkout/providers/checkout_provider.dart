@@ -6,6 +6,8 @@ class CheckoutState {
   final double cashReceived;
   final bool isSuccessModalVisible;
   final bool isPrinting;
+  final String customerName;
+  final String orderType; // 'Dine In' or 'Takeaway'
 
   const CheckoutState({
     this.selectedMethod = 'qris',
@@ -13,6 +15,8 @@ class CheckoutState {
     this.cashReceived = 121000,
     this.isSuccessModalVisible = false,
     this.isPrinting = false,
+    this.customerName = 'Bpk. Kevin',
+    this.orderType = 'Dine In',
   });
 
   CheckoutState copyWith({
@@ -21,6 +25,8 @@ class CheckoutState {
     double? cashReceived,
     bool? isSuccessModalVisible,
     bool? isPrinting,
+    String? customerName,
+    String? orderType,
   }) {
     return CheckoutState(
       selectedMethod: selectedMethod ?? this.selectedMethod,
@@ -28,6 +34,8 @@ class CheckoutState {
       cashReceived: cashReceived ?? this.cashReceived,
       isSuccessModalVisible: isSuccessModalVisible ?? this.isSuccessModalVisible,
       isPrinting: isPrinting ?? this.isPrinting,
+      customerName: customerName ?? this.customerName,
+      orderType: orderType ?? this.orderType,
     );
   }
 }
@@ -53,6 +61,14 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
 
   void setPrinting(bool printing) {
     state = state.copyWith(isPrinting: printing);
+  }
+
+  void setCustomerName(String name) {
+    state = state.copyWith(customerName: name);
+  }
+
+  void setOrderType(String type) {
+    state = state.copyWith(orderType: type);
   }
 }
 

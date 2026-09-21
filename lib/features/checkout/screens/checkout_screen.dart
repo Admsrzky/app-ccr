@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
 import '../providers/checkout_provider.dart';
+import 'receipt_screen.dart';
 
 class CheckoutScreen extends ConsumerWidget {
   const CheckoutScreen({super.key});
@@ -114,6 +115,74 @@ class CheckoutScreen extends ConsumerWidget {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        // Order Type Selector (Dine In / Takeaway)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => notifier.setOrderType('Dine In'),
+                                child: NeomorphicContainer(
+                                  borderRadius: 12,
+                                  isInset: state.orderType != 'Dine In',
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.restaurant, size: 16, color: state.orderType == 'Dine In' ? AppColors.primary : AppColors.secondary),
+                                      const SizedBox(width: 6),
+                                      Text('Dine In', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: state.orderType == 'Dine In' ? AppColors.primary : AppColors.secondary)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => notifier.setOrderType('Takeaway'),
+                                child: NeomorphicContainer(
+                                  borderRadius: 12,
+                                  isInset: state.orderType != 'Takeaway',
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.takeout_dining, size: 16, color: state.orderType == 'Takeaway' ? AppColors.primary : AppColors.secondary),
+                                      const SizedBox(width: 6),
+                                      Text('Takeaway', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: state.orderType == 'Takeaway' ? AppColors.primary : AppColors.secondary)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // Customer Name Input (Optional)
+                        NeomorphicContainer(
+                          borderRadius: 12,
+                          isInset: true,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.person_outline, size: 18, color: AppColors.outline),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextField(
+                                  controller: TextEditingController(text: state.customerName),
+                                  onChanged: (val) => notifier.setCustomerName(val),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Nama Pelanggan (Opsional)',
+                                    hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
+                                    border: InputBorder.none,
+                                  ),
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.onSurface),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         // Order Items Recap Card (Collapsible)
@@ -493,6 +562,26 @@ class CheckoutScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 20),
                         // Quick Action Buttons
+                        NeomorphicContainer(
+                          borderRadius: 12,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          onTap: () {
+                            notifier.setSuccessModalVisible(false);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ReceiptScreen()),
+                            );
+                          },
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.receipt, size: 16, color: AppColors.primary),
+                              SizedBox(width: 8),
+                              Text('Lihat Struk Pelanggan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         NeomorphicContainer(
                           borderRadius: 12,
                           padding: const EdgeInsets.symmetric(vertical: 12),

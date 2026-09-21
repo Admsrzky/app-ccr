@@ -22,7 +22,7 @@ class ProductCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return NeomorphicContainer(
       borderRadius: 14,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(8),
       onTap: () {
         showModalBottomSheet(
           context: context,
@@ -40,7 +40,7 @@ class ProductCardWidget extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: AspectRatio(
-                  aspectRatio: 1.0,
+                  aspectRatio: 1.15,
                   child: Container(
                     color: AppColors.surfaceContainer,
                     child: Image.network(
@@ -52,10 +52,10 @@ class ProductCardWidget extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: 8,
-                left: 8,
+                top: 6,
+                left: 6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: product.isPedas ? AppColors.error.withOpacity(0.9) : AppColors.surface.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(999),
@@ -66,7 +66,7 @@ class ProductCardWidget extends StatelessWidget {
                   child: Text(
                     product.badgeText,
                     style: TextStyle(
-                      fontSize: 9,
+                      fontSize: 8,
                       fontWeight: FontWeight.bold,
                       color: product.isPedas ? Colors.white : AppColors.primary,
                     ),
@@ -75,33 +75,32 @@ class ProductCardWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           // Title & Description
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(
                   product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   product.description,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant),
+                  style: const TextStyle(fontSize: 9, color: AppColors.onSurfaceVariant),
                 ),
-                const SizedBox(height: 4),
                 // S R J Size Indicators in card as requested
                 Row(
                   children: [
                     _sizeBadge('S', false),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 2),
                     _sizeBadge('R', true),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 2),
                     _sizeBadge('J', false),
                   ],
                 ),
@@ -117,10 +116,10 @@ class ProductCardWidget extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Mulai', style: TextStyle(fontSize: 9, color: AppColors.onSurfaceVariant)),
+                  const Text('Mulai', style: TextStyle(fontSize: 8, color: AppColors.onSurfaceVariant)),
                   Text(
                     'Rp ${_formatPrice(product.price)}',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                   ),
                 ],
               ),
@@ -130,43 +129,43 @@ class ProductCardWidget extends StatelessWidget {
                     GestureDetector(
                       onTap: onMinus,
                       child: Container(
-                        width: 24,
-                        height: 24,
+                        width: 22,
+                        height: 22,
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           boxShadow: const [
-                            BoxShadow(color: AppColors.neoDarkShadow, offset: Offset(2, 2), blurRadius: 4),
-                            BoxShadow(color: AppColors.neoLightShadow, offset: Offset(-2, -2), blurRadius: 4),
+                            BoxShadow(color: AppColors.neoDarkShadow, offset: Offset(1.5, 1.5), blurRadius: 3),
+                            BoxShadow(color: AppColors.neoLightShadow, offset: Offset(-1.5, -1.5), blurRadius: 3),
                           ],
                         ),
                         child: const Center(
-                          child: Icon(Icons.remove, size: 14, color: AppColors.onSurfaceVariant),
+                          child: Icon(Icons.remove, size: 12, color: AppColors.onSurfaceVariant),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Text(
                       '$qty',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                   ],
                   GestureDetector(
                     onTap: onAdd,
                     child: Container(
-                      width: 28,
-                      height: 28,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
                         color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                         boxShadow: const [
-                          BoxShadow(color: AppColors.neoDarkShadow, offset: Offset(2, 2), blurRadius: 4),
-                          BoxShadow(color: AppColors.neoLightShadow, offset: Offset(-2, -2), blurRadius: 4),
+                          BoxShadow(color: AppColors.neoDarkShadow, offset: Offset(1.5, 1.5), blurRadius: 3),
+                          BoxShadow(color: AppColors.neoLightShadow, offset: Offset(-1.5, -1.5), blurRadius: 3),
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.add, size: 16, color: AppColors.primary),
+                        child: Icon(Icons.add, size: 14, color: AppColors.primary),
                       ),
                     ),
                   ),

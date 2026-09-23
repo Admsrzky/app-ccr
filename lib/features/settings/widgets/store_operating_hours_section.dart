@@ -415,7 +415,7 @@ class StoreOperatingHoursSection extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Row(
-              mainAxisAlignment: MainAxisAlignment.between,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Toko tutup otomatis di POS & Delivery Online', style: TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant)),
                 GestureDetector(

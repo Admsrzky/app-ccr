@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../../../core/utils/page_transitions.dart';
 import '../../checkout/screens/checkout_screen.dart';
 import '../../checkout/screens/receipt_screen.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -123,7 +124,7 @@ class PosDashboardScreen extends ConsumerWidget {
               onCheckout: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CheckoutScreen()),
+                  AppRoute.fadeSlide(const CheckoutScreen()),
                 );
               },
             ),
@@ -136,12 +137,12 @@ class PosDashboardScreen extends ConsumerWidget {
               if (index == 1) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ReceiptScreen()),
+                  AppRoute.fadeSlide(const ReceiptScreen()),
                 );
               } else if (index == 3) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  AppRoute.fadeSlide(const SettingsScreen()),
                 );
               } else if (index != 0) {
                 ScaffoldMessenger.of(context).showSnackBar(

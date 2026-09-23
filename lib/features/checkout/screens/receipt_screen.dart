@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
 import '../providers/checkout_provider.dart';
-import 'kitchen_receipt_screen.dart';
+import '../widgets/receipt_header.dart';
+import '../widgets/receipt_action_bar.dart';
 
 class ReceiptScreen extends ConsumerStatefulWidget {
   const ReceiptScreen({super.key});
@@ -20,11 +21,21 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto print / KOT dispatch trigger after 5 seconds
     Future.delayed(const Duration(seconds: 5), () {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Auto-Print (5s): Struk Dapur (KOT) otomatis keluar ke Printer 01!')),
+      );
+    });
+  }
+
+  void _triggerPrint() {
+    setState(() => isPrinting = true);
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      setState(() => isPrinting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Struk Pelanggan berhasil dicetak (Epson TM-T82X)!')),
       );
     });
   }
@@ -42,60 +53,7 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar / App Header
-            Container(
-              height: 70,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppColors.surface.withOpacity(0.9),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x08000000), offset: Offset(0, 4), blurRadius: 16),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  NeomorphicContainer(
-                    borderRadius: 999,
-                    width: 44,
-                    height: 44,
-                    onTap: () => Navigator.pop(context),
-                    child: const Center(
-                      child: Icon(Icons.arrow_back_ios_new, size: 18, color: AppColors.onSurface),
-                    ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('ANDROID POS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.secondary, letterSpacing: 1)),
-                      const Text('Struk Pelanggan', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                    ],
-                  ),
-                  NeomorphicContainer(
-                    borderRadius: 999,
-                    width: 44,
-                    height: 44,
-                    onTap: () {
-                      setState(() => isPrinting = true);
-                      Future.delayed(const Duration(milliseconds: 1500), () {
-                        if (!mounted) return;
-                        setState(() => isPrinting = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Struk Pelanggan berhasil dicetak (Epson TM-T82X)!')),
-                        );
-                      });
-                    },
-                    child: Center(
-                      child: Icon(
-                        isPrinting ? Icons.autorenew : Icons.print,
-                        size: 20,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ReceiptHeader(isPrinting: isPrinting, onPrintTap: _triggerPrint),
             // Status Chip & Quick Metadata
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -147,7 +105,6 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
-                    // Jagged Top Edge
                     ClipPath(
                       clipper: _JaggedClipper(isTop: true),
                       child: Container(
@@ -155,7 +112,6 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                         color: AppColors.surfaceContainerLow,
                       ),
                     ),
-                    // Paper Body
                     Container(
                       width: double.infinity,
                       color: AppColors.surfaceContainerLow,
@@ -163,7 +119,6 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Store Logo & Header
                           Container(
                             width: 60,
                             height: 60,
@@ -189,16 +144,14 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                           const SizedBox(height: 12),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
-                          // Receipt metadata
                           _receiptInfoRow('No. Struk:', 'INV/20241024/049'),
                           const SizedBox(height: 4),
                           _receiptInfoRow('Waktu:', '24/10/2024 12:45:18'),
                           const SizedBox(height: 4),
-                           _receiptInfoRow('Pelanggan:', state.customerName.isNotEmpty ? '${state.customerName} (${state.orderType})' : 'Bpk. Kevin (${state.orderType})'),
+                          _receiptInfoRow('Pelanggan:', state.customerName.isNotEmpty ? '${state.customerName} (${state.orderType})' : 'Bpk. Kevin (${state.orderType})'),
                           const SizedBox(height: 8),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 10),
-                          // Items
                           _itemDetailRow('Celup BBQ + Fill Keju (R)', 'Rp 21.000', '1x @ Rp 21.000', extraName: '+ Ekstra Saus Keju', extraPrice: '+Rp 4.000', note: '* Note: Goreng garing, saus celup dipisah'),
                           const SizedBox(height: 10),
                           _itemDetailRow('Celup Saus Keju (R)', 'Rp 36.000', '2x @ Rp 18.000'),
@@ -209,7 +162,6 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                           const SizedBox(height: 12),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
-                          // Financial Summary
                           _sumRow('Subtotal (4 Item / 6 Qty)', 'Rp 101.000'),
                           const SizedBox(height: 4),
                           _sumRow('PB1 / Pajak Resto (10%)', 'Rp 10.100'),
@@ -228,11 +180,10 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                           const SizedBox(height: 10),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
-                          // Payment Details
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.03), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(8)),
                             child: Column(
                               children: [
                                 _sumRow('Metode Bayar', 'QRIS (GoPay/BCA)'),
@@ -256,14 +207,12 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Footer & Loyalty (NO Barcode as requested)
                           const Text('Terima kasih atas kunjungannya!\nNikmati gurih & renyahnya roll kami setiap hari.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: AppColors.secondary, height: 1.3)),
                           const SizedBox(height: 6),
                           const Text('Follow IG @chickencrunchyroll', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
                         ],
                       ),
                     ),
-                    // Jagged Bottom Edge
                     ClipPath(
                       clipper: _JaggedClipper(isTop: false),
                       child: Container(
@@ -275,109 +224,27 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                 ),
               ),
             ),
-            // Bottom Action Bar
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surface.withOpacity(0.95),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x08000000), offset: Offset(0, -4), blurRadius: 16),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: NeomorphicContainer(
-                          borderRadius: 12,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          onTap: () {
-                            setState(() => isWhatsAppSent = true);
-                            Future.delayed(const Duration(seconds: 1), () {
-                              if (!mounted) return;
-                              setState(() => isWhatsAppSent = false);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Struk terkirim ke WhatsApp!')));
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(isWhatsAppSent ? Icons.check : Icons.chat, size: 16, color: AppColors.primary),
-                              const SizedBox(width: 6),
-                              const Text('Kirim WhatsApp', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: NeomorphicContainer(
-                          borderRadius: 12,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          onTap: () {
-                            setState(() => isPdfDownloaded = true);
-                            Future.delayed(const Duration(seconds: 1), () {
-                              if (!mounted) return;
-                              setState(() => isPdfDownloaded = false);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF Struk berhasil diunduh!')));
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(isPdfDownloaded ? Icons.check : Icons.download, size: 16, color: AppColors.secondary),
-                              const SizedBox(width: 6),
-                              const Text('Unduh PDF', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  NeomorphicContainer(
-                    borderRadius: 12,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    onTap: () {
-                      setState(() => isPrinting = true);
-                      Future.delayed(const Duration(milliseconds: 1500), () {
-                        if (!mounted) return;
-                        setState(() => isPrinting = false);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Struk berhasil dicetak (Epson TM-T82X)!')));
-                      });
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(isPrinting ? Icons.autorenew : Icons.print, size: 18, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        Text(isPrinting ? 'Mencetak Struk...' : 'Cetak Struk Pelanggan', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  NeomorphicContainer(
-                    borderRadius: 12,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const KitchenReceiptScreen()),
-                      );
-                    },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.restaurant, size: 18, color: AppColors.secondary),
-                        SizedBox(width: 8),
-                        Text('Lihat Struk Dapur (KOT)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.secondary)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            ReceiptActionBar(
+              isWhatsAppSent: isWhatsAppSent,
+              isPdfDownloaded: isPdfDownloaded,
+              isPrinting: isPrinting,
+              onWhatsAppTap: () {
+                setState(() => isWhatsAppSent = true);
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (!mounted) return;
+                  setState(() => isWhatsAppSent = false);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Struk terkirim ke WhatsApp!')));
+                });
+              },
+              onDownloadPdfTap: () {
+                setState(() => isPdfDownloaded = true);
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (!mounted) return;
+                  setState(() => isPdfDownloaded = false);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PDF Struk berhasil diunduh!')));
+                });
+              },
+              onPrintTap: _triggerPrint,
             ),
           ],
         ),

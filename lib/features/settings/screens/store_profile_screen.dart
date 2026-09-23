@@ -63,7 +63,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                 ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.between,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
@@ -73,7 +73,7 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         height: 44,
                         onTap: () => Navigator.pop(context),
                         child: const Center(
-                          child: Icon(Icons.arrow_back_ios_new, size: 18, color: AppColors.primary),
+                          child: Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -100,25 +100,6 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         ],
                       ),
                     ],
-                  ),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: const [
-                        BoxShadow(color: Color(0x14000000), offset: Offset(3, 3), blurRadius: 6),
-                        BoxShadow(color: Color(0x99FFFFFF), offset: Offset(-3, -3), blurRadius: 6),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: Image.network(
-                        'https://lh3.googleusercontent.com/aida/AEtjO1X_GaDQ_NW_uxSpegbATi5vEFpZAPlwmemR2vKiSc3f6H2Gl7krP8v0mST1f-2GQ8GpCY1sJmKjqgzx4AURFruKEoe_3Z77JlkALmAV3jWc5dN2mQ2_pykPbg4KvpRI0c5ByjU21-T2g_CbrI5KzYLWAVF_-gbRQYfA96IgXX9yrzkY3YFh8L59U1wf1kZJW7D0Z_wZEQ8QAgpRbF4F9wtQW7J8GcOGGiWfTnza7Hd2H4ShlDH1lwh9Jzk',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, size: 16, color: AppColors.primary),
-                      ),
-                    ),
                   ),
                 ],
               ),

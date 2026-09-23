@@ -28,6 +28,25 @@ class CashierNotifier extends StateNotifier<CashierSession> {
     }
   }
 
+  Future<void> googleLogin(Function(bool success) onLoginSuccess) async {
+    if (state.isLoading || state.isShiftActive) return;
+
+    state = state.copyWith(isLoading: true);
+
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    if (!mounted) return;
+
+    state = state.copyWith(
+      isLoading: false,
+      isShiftActive: true,
+      cashierName: 'Google Auth (Owner / Manager)',
+      cashierRole: 'Admin Outlet',
+    );
+
+    onLoginSuccess(true);
+  }
+
   Future<void> startShift(Function(bool success) onShiftStarted) async {
     if (state.isLoading || state.isShiftActive) return;
 

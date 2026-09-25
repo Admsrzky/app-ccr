@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../providers/store_provider.dart';
 import '../widgets/store_intro_banner.dart';
 import '../widgets/store_hero_card.dart';
 import '../widgets/store_brand_form.dart';
@@ -24,14 +25,33 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
   void _handleSave() async {
     setState(() {
       _isSaving = true;
-      _saveButtonText = 'Perubahan Tersimpan!';
-      _saveButtonIcon = Icons.done_all;
-      _isSavedSuccess = true;
+      _saveButtonText = 'Menyimpan...';
+      _saveButtonIcon = Icons.sync;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil toko berhasil diperbarui!')),
-    );
+    final success = await ref.read(storeProvider.notifier).saveProfile();
+    if (!mounted) return;
+
+    if (success) {
+      setState(() {
+        _saveButtonText = 'Perubahan Tersimpan!';
+        _saveButtonIcon = Icons.done_all;
+        _isSavedSuccess = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ref.read(storeProvider).isOffline
+                ? 'Profil toko disimpan lokal (server tidak tersedia)'
+                : 'Profil toko berhasil diperbarui!',
+          ),
+        ),
+      );
+    } else {
+      final error = ref.read(storeProvider).errorMessage ?? 'Gagal menyimpan profil toko';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    }
 
     await Future.delayed(const Duration(milliseconds: 2200));
 
@@ -47,6 +67,9 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final storeState = ref.watch(storeProvider);
+    final store = storeState.store;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -85,15 +108,15 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                         errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                       ),
                       const SizedBox(width: 8),
-                      const Column(
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'CHICKEN CRUNCHY ROLL',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.onSurfaceVariant, letterSpacing: 0.5),
+                            store.brandName.toUpperCase(),
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.onSurfaceVariant, letterSpacing: 0.5),
                           ),
-                          Text(
+                          const Text(
                             'Profil & Alamat Toko',
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                           ),
@@ -111,13 +134,33 @@ class _StoreProfileScreenState extends ConsumerState<StoreProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (storeState.isOffline && storeState.errorMessage != null) ...[
+                      NeomorphicContainer(
+                        borderRadius: 12,
+                        isInset: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.wifi_off, size: 14, color: AppColors.error),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                storeState.errorMessage!,
+                                style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     const StoreIntroBanner(),
                     const SizedBox(height: 16),
-                    const StoreHeroCard(),
+                    StoreHeroCard(key: ValueKey(store)),
                     const SizedBox(height: 16),
-                    const StoreBrandForm(),
+                    StoreBrandForm(key: ValueKey(store)),
                     const SizedBox(height: 16),
-                    const StoreAddressContactSection(),
+                    StoreAddressContactSection(key: ValueKey(store)),
                     const SizedBox(height: 16),
                     const StoreOperatingHoursSection(),
                     const SizedBox(height: 24),

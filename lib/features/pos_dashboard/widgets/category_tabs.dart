@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../models/category_model.dart';
 
 class CategoryTabs extends StatelessWidget {
+  final List<CategoryModel> categories;
   final String selectedCategory;
   final ValueChanged<String> onCategorySelected;
 
   const CategoryTabs({
     super.key,
+    required this.categories,
     required this.selectedCategory,
     required this.onCategorySelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
-      {'id': 'all', 'label': 'Semua'},
-      {'id': 'celup', 'label': 'Celup'},
-      {'id': 'filling', 'label': 'Filling'},
-      {'id': 'tabur', 'label': 'Tabur'},
-      {'id': 'celup-filling', 'label': 'Celup + Filling'},
-      {'id': 'tabur-filling', 'label': 'Tabur + Filling'},
-    ];
-
     return SizedBox(
       height: 42,
       child: ListView.separated(
@@ -31,10 +25,16 @@ class CategoryTabs extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final cat = categories[index];
-          final isSelected = selectedCategory == cat['id'];
+          final label = cat.slug == 'all'
+              ? 'Semua'
+              : cat.name.replaceAllMapped(
+                  RegExp(r'(\w+)(\s\+)'),
+                  (m) => m[1]! + ' +',
+                );
+          final isSelected = selectedCategory == cat.slug;
 
           return GestureDetector(
-            onTap: () => onCategorySelected(cat['id']!),
+            onTap: () => onCategorySelected(cat.slug),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: isSelected
@@ -90,7 +90,7 @@ class CategoryTabs extends StatelessWidget {
                     const SizedBox(width: 6),
                   ],
                   Text(
-                    cat['label']!,
+                    label,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,

@@ -4,13 +4,13 @@ import '../../../../core/widgets/neomorphic_container.dart';
 
 class ShiftLaunchButton extends StatelessWidget {
   final bool isLoading;
-  final bool isShiftActive;
+  final bool isLoggedIn;
   final VoidCallback onPressed;
 
   const ShiftLaunchButton({
     super.key,
     required this.isLoading,
-    required this.isShiftActive,
+    required this.isLoggedIn,
     required this.onPressed,
   });
 
@@ -20,7 +20,7 @@ class ShiftLaunchButton extends StatelessWidget {
     Widget icon;
 
     if (isLoading) {
-      text = 'Membuka Kasir...';
+      text = 'Memverifikasi PIN...';
       icon = const SizedBox(
         width: 20,
         height: 20,
@@ -29,11 +29,11 @@ class ShiftLaunchButton extends StatelessWidget {
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
       );
-    } else if (isShiftActive) {
-      text = 'Shift Dimulai!';
+    } else if (isLoggedIn) {
+      text = 'Kasir Terbuka!';
       icon = const Icon(Icons.check_circle, color: AppColors.primary, size: 20);
     } else {
-      text = 'Buka Kasir & Mulai Shift';
+      text = 'Buka Kasir';
       icon = const Icon(Icons.point_of_sale, color: AppColors.primary, size: 20);
     }
 

@@ -45,11 +45,14 @@ class OrderItemsRecapCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ringkasan Pesanan (3 Item)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                        Text('Tap untuk rincian belanja', style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                        Text(
+                          'Ringkasan Pesanan (${state.totalQty} Item)',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                        ),
+                        const Text('Tap untuk rincian belanja', style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
                       ],
                     ),
                   ],
@@ -71,24 +74,19 @@ class OrderItemsRecapCard extends StatelessWidget {
           ),
           if (state.isSummaryExpanded) ...[
             const Divider(height: 24),
-            const Column(
+            Column(
               children: [
-                _OrderItemRow(
-                  name: 'Fire Nashville Roll',
-                  detail: '2x @ Rp 39.000 (Level 3 Pedas)',
-                  price: 'Rp 78.000',
-                  imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQk-9ng6SY-K-jfaZER-LxzLXG-6PGKrW3rnyGijRL3RD7_IphrXq_aGZuMojWZbPPfAxzJELXejTU8_vOWerXc0wIf_gxBPVz0QlBLZwxfRjqvDwnAZxs407Bx3nNVyRfQ94QUsvVmFJHvULS18-UskPW1IHYKfS30OMukHcXhaxLkaseFytI480lMafb3jkZs20spey3d10qApOysm5freWECGpZR7jpUf7GghivChKsxGMY_cKq',
-                ),
-                SizedBox(height: 12),
-                _OrderItemRow(
-                  name: 'Crunchy Cheesy Roll',
-                  detail: '1x @ Rp 32.000 (Extra Cheese)',
-                  price: 'Rp 32.000',
-                  imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdECqLcgOK21SDj-e3bvZ2bysRH1o1JKfx6qyL36_I8eqwC9aHcFxv_P2Y9RZsZHZgW1A5mx3mphSpWSGR-GhhwEBiFhCWK4hXuDhCE0IRkX1iWJBONlCL0NIUiYwTQGuTLVnLSsK3B50KJzaH1ijTGEtn0-3fTKnIl26E6OJFCx1DWtVFBnGyZAdhy9qJ-JCfOKvJEmRQktSxY_0uxsJfcM04Ao6XPMB5Emtm5TyFb4-9RhNG3ZNj',
-                ),
+                for (final item in state.items) ...[
+                  _OrderItemRow(
+                    name: item.product.name,
+                    detail: '${item.quantity}x @ Rp ${formatPrice(item.product.price)}',
+                    price: 'Rp ${formatPrice(item.lineTotal)}',
+                    imageUrl: item.product.imageUrl,
+                  ),
+                  const SizedBox(height: 12),
+                ],
               ],
             ),
-            const SizedBox(height: 12),
             NeomorphicContainer(
               borderRadius: 12,
               isInset: true,
@@ -148,27 +146,39 @@ class _OrderItemRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  color: AppColors.surfaceContainer,
-                  child: Image.network(imageUrl, fit: BoxFit.cover),
+          Expanded(
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    color: AppColors.surfaceContainer,
+                    child: imageUrl.isEmpty
+                        ? const Icon(Icons.fastfood, size: 20, color: AppColors.primary)
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.fastfood, size: 20, color: AppColors.primary),
+                          ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  Text(detail, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant)),
-                ],
-              ),
-            ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                      Text(detail, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Text(price, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
         ],
       ),

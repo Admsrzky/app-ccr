@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../providers/store_provider.dart';
 
-class StoreHeroCard extends StatelessWidget {
+class StoreHeroCard extends ConsumerWidget {
   const StoreHeroCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final store = ref.watch(storeProvider).store;
+
     return NeomorphicContainer(
       borderRadius: 16,
       padding: const EdgeInsets.all(20),
@@ -25,11 +29,11 @@ class StoreHeroCard extends StatelessWidget {
                     BoxShadow(color: Color(0x99FFFFFF), offset: Offset(-2, -2), blurRadius: 4, spreadRadius: -1),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.tag, size: 14, color: AppColors.primary),
-                    SizedBox(width: 4),
-                    Text('CCR-JKT-01', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant)),
+                    const Icon(Icons.tag, size: 14, color: AppColors.primary),
+                    const SizedBox(width: 4),
+                    Text(store.storeCode, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant)),
                   ],
                 ),
               ),
@@ -45,9 +49,23 @@ class StoreHeroCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: store.isOpen ? Colors.green : AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    const Text('Aktif / Buka', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green)),
+                    Text(
+                      store.isOpen ? 'Aktif / Buka' : 'Tutup',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: store.isOpen ? Colors.green : AppColors.error,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -88,9 +106,9 @@ class StoreHeroCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('Chicken Crunchy Roll', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+          Text(store.brandName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
           const SizedBox(height: 2),
-          const Text('Cabang Senopati 01 • Flagship Store', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+          Text('${store.branchName} • ${store.storeCode}', style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
           const SizedBox(height: 14),
           NeomorphicContainer(
             borderRadius: 999,

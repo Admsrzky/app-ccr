@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../../settings/providers/store_provider.dart';
+import '../models/order_model.dart';
 import '../providers/checkout_provider.dart';
 import '../widgets/receipt_header.dart';
 import '../widgets/receipt_action_bar.dart';
@@ -40,13 +42,37 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
     });
   }
 
+  String _methodLabel(String? method) => switch (method) {
+        'cash' => 'Tunai (Cash)',
+        'edc' => 'EDC Kartu',
+        'transfer' => 'Transfer Bank',
+        _ => 'QRIS (GoPay/BCA)',
+      };
+
+  String _formatDateTime(DateTime? time) {
+    final t = time ?? DateTime.now();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${t.day} ${months[t.month - 1]} ${t.year}, ${two(t.hour)}:${two(t.minute)} WIB';
+  }
+
+  String _formatDateFull(DateTime? time) {
+    final t = time ?? DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(t.day)}/${two(t.month)}/${t.year} ${two(t.hour)}:${two(t.minute)}:${two(t.second)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(checkoutProvider);
+    final store = ref.watch(storeProvider).store;
+    final order = state.lastOrder;
+    final bool hasOrder = order != null;
 
-    const double subtotal = 110000;
-    const double tax = 11000;
-    const double totalBill = subtotal + tax;
+    final double subtotal = hasOrder ? order.subtotal : 110000;
+    final double tax = hasOrder ? order.tax : 11000;
+    final double totalBill = hasOrder ? order.total : subtotal + tax;
+    final int totalQty = hasOrder ? order.itemCount : 6;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -69,10 +95,16 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                           children: [
                             Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
                             const SizedBox(width: 6),
-                            const Text('LUNAS (PAID) • QRIS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                            Text(
+                              'LUNAS (PAID) • ${_methodLabel(order?.paymentMethod ?? state.selectedMethod).toUpperCase()}',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            ),
                           ],
                         ),
-                        const Text('24 Okt 2024, 12:45 WIB', style: TextStyle(fontSize: 11, color: AppColors.secondary)),
+                        Text(
+                          hasOrder ? _formatDateTime(order.createdAt) : '24 Okt 2024, 12:45 WIB',
+                          style: const TextStyle(fontSize: 11, color: AppColors.secondary),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -84,14 +116,17 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                             style: const TextStyle(fontSize: 11, color: AppColors.secondary),
                             children: [
                               const TextSpan(text: 'Order ID: '),
-                              TextSpan(text: '#CR-1049', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                              TextSpan(
+                                text: '#${order?.orderNumber ?? 'CR-1049'}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                              ),
                             ],
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(color: AppColors.surfaceContainer, borderRadius: BorderRadius.circular(6)),
-                          child: Text(state.orderType, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                          child: Text(order?.orderType ?? state.orderType, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
                         ),
                       ],
                     ),
@@ -137,34 +172,47 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text('CHICKEN CRUNCHY ROLL', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1, color: AppColors.onSurface)),
+                          Text(
+                            store.brandName.toUpperCase(),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1, color: AppColors.onSurface),
+                          ),
                           const SizedBox(height: 2),
-                          const Text('Cabang Senopati 01 - Jakarta Selatan', style: TextStyle(fontSize: 10, color: AppColors.secondary)),
-                          const Text('Telp: 0812-3456-7890', style: TextStyle(fontSize: 10, color: AppColors.secondary)),
+                          Text(store.branchName, style: const TextStyle(fontSize: 10, color: AppColors.secondary)),
+                          Text('Telp: ${store.phone ?? '-'}', style: const TextStyle(fontSize: 10, color: AppColors.secondary)),
                           const SizedBox(height: 12),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
-                          _receiptInfoRow('No. Struk:', 'INV/20241024/049'),
+                          _receiptInfoRow('No. Struk:', hasOrder ? order.orderNumber : 'INV/20241024/049'),
                           const SizedBox(height: 4),
-                          _receiptInfoRow('Waktu:', '24/10/2024 12:45:18'),
+                          _receiptInfoRow('Waktu:', _formatDateFull(order?.createdAt)),
                           const SizedBox(height: 4),
-                          _receiptInfoRow('Pelanggan:', state.customerName.isNotEmpty ? '${state.customerName} (${state.orderType})' : 'Bpk. Kevin (${state.orderType})'),
+                          _receiptInfoRow(
+                            'Pelanggan:',
+                            '${state.customerName.isNotEmpty ? state.customerName : (order?.customerName ?? 'Bpk. Kevin')} (${order?.orderType ?? state.orderType})',
+                          ),
                           const SizedBox(height: 8),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 10),
-                          _itemDetailRow('Celup BBQ + Fill Keju (R)', 'Rp 21.000', '1x @ Rp 21.000', extraName: '+ Ekstra Saus Keju', extraPrice: '+Rp 4.000', note: '* Note: Goreng garing, saus celup dipisah'),
-                          const SizedBox(height: 10),
-                          _itemDetailRow('Celup Saus Keju (R)', 'Rp 36.000', '2x @ Rp 18.000'),
-                          const SizedBox(height: 10),
-                          _itemDetailRow('Tabur Balado Manis (Jumbo)', 'Rp 28.000', '1x @ Rp 28.000', extraName: '+ Ekstra Sambal Pedas', extraPrice: '+Rp 2.000'),
-                          const SizedBox(height: 10),
-                          _itemDetailRow('Air Mineral Dingin', 'Rp 12.000', '2x @ Rp 6.000'),
+                          if (hasOrder)
+                            for (final item in order.items) ...[
+                              _orderItemRow(item),
+                              const SizedBox(height: 10),
+                            ]
+                          else ...[
+                            _itemDetailRow('Celup BBQ + Fill Keju (R)', 'Rp 21.000', '1x @ Rp 21.000', extraName: '+ Ekstra Saus Keju', extraPrice: '+Rp 4.000', note: '* Note: Goreng garing, saus celup dipisah'),
+                            const SizedBox(height: 10),
+                            _itemDetailRow('Celup Saus Keju (R)', 'Rp 36.000', '2x @ Rp 18.000'),
+                            const SizedBox(height: 10),
+                            _itemDetailRow('Tabur Balado Manis (Jumbo)', 'Rp 28.000', '1x @ Rp 28.000', extraName: '+ Ekstra Sambal Pedas', extraPrice: '+Rp 2.000'),
+                            const SizedBox(height: 10),
+                            _itemDetailRow('Air Mineral Dingin', 'Rp 12.000', '2x @ Rp 6.000'),
+                          ],
                           const SizedBox(height: 12),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
-                          _sumRow('Subtotal (4 Item / 6 Qty)', 'Rp 101.000'),
+                          _sumRow('Subtotal ($totalQty Item)', 'Rp ${_formatPrice(subtotal)}'),
                           const SizedBox(height: 4),
-                          _sumRow('PB1 / Pajak Resto (10%)', 'Rp 10.100'),
+                          _sumRow('PB1 / Pajak Resto (10%)', 'Rp ${_formatPrice(tax)}'),
                           const SizedBox(height: 4),
                           _sumRow('Pembulatan', 'Rp 0'),
                           const SizedBox(height: 8),
@@ -177,6 +225,10 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                               Text('Rp ${_formatPrice(totalBill)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
                             ],
                           ),
+                          if (hasOrder && order.change != null && order.change! > 0) ...[
+                            const SizedBox(height: 6),
+                            _sumRow('Kembalian', 'Rp ${_formatPrice(order.change!)}'),
+                          ],
                           const SizedBox(height: 10),
                           const Divider(color: Colors.grey, thickness: 1, indent: 10, endIndent: 10),
                           const SizedBox(height: 8),
@@ -186,9 +238,9 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                             decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.03), borderRadius: BorderRadius.circular(8)),
                             child: Column(
                               children: [
-                                _sumRow('Metode Bayar', 'QRIS (GoPay/BCA)'),
+                                _sumRow('Metode Bayar', _methodLabel(order?.paymentMethod ?? state.selectedMethod)),
                                 const SizedBox(height: 4),
-                                _sumRow('Reff ID', 'QR-20241024-882190'),
+                                _sumRow('Reff ID', hasOrder ? 'ORD-${order.orderNumber}' : 'QR-20241024-882190'),
                                 const SizedBox(height: 4),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,7 +261,7 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                           const SizedBox(height: 20),
                           const Text('Terima kasih atas kunjungannya!\nNikmati gurih & renyahnya roll kami setiap hari.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: AppColors.secondary, height: 1.3)),
                           const SizedBox(height: 6),
-                          const Text('Follow IG @chickencrunchyroll', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                          Text('Follow IG ${store.instagram ?? '@chickencrunchyroll'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
                         ],
                       ),
                     ),
@@ -252,6 +304,25 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
     );
   }
 
+  Widget _orderItemRow(OrderItemModel item) {
+    final name = (item.sizeName != null && item.sizeName!.isNotEmpty)
+        ? '${item.productName} (${item.sizeName})'
+        : item.productName;
+    final addons = item.addons;
+    final addonTotal = item.addonTotal;
+
+    return _itemDetailRow(
+      name,
+      'Rp ${_formatPrice(item.subtotal)}',
+      '${item.quantity}x @ Rp ${_formatPrice(item.unitPrice)}',
+      extraName: addons.isEmpty
+          ? null
+          : '+ ${addons.map((a) => '${a.name}${a.quantity > 1 ? ' x${a.quantity}' : ''}').join(', ')}',
+      extraPrice: addons.isEmpty ? null : '+Rp ${_formatPrice(addonTotal)}',
+      note: (item.notes != null && item.notes!.isNotEmpty) ? '* Note: ${item.notes}' : null,
+    );
+  }
+
   Widget _receiptInfoRow(String label, String val) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -278,7 +349,7 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(extraName, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
+              Expanded(child: Text(extraName, style: const TextStyle(fontSize: 10, color: AppColors.primary))),
               Text(extraPrice, style: const TextStyle(fontSize: 10, color: AppColors.primary)),
             ],
           ),

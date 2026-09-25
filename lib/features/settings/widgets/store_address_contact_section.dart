@@ -1,12 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../providers/store_provider.dart';
 
-class StoreAddressContactSection extends StatelessWidget {
+class StoreAddressContactSection extends ConsumerStatefulWidget {
   const StoreAddressContactSection({super.key});
 
   @override
+  ConsumerState<StoreAddressContactSection> createState() => _StoreAddressContactSectionState();
+}
+
+class _StoreAddressContactSectionState extends ConsumerState<StoreAddressContactSection> {
+  late final TextEditingController _address;
+  late final TextEditingController _phone;
+  late final TextEditingController _email;
+  late final TextEditingController _instagram;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(storeProvider);
+    _address = TextEditingController(text: state.displayValue('address'));
+    _phone = TextEditingController(text: state.displayValue('phone'));
+    _email = TextEditingController(text: state.displayValue('email'));
+    _instagram = TextEditingController(text: state.displayValue('instagram'));
+  }
+
+  @override
+  void dispose() {
+    _address.dispose();
+    _phone.dispose();
+    _email.dispose();
+    _instagram.dispose();
+    super.dispose();
+  }
+
+  void _setDraft(String key, String value) {
+    ref.read(storeProvider.notifier).setDraft(key, value);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final store = ref.watch(storeProvider).store;
+
     return NeomorphicContainer(
       borderRadius: 16,
       padding: const EdgeInsets.all(16),
@@ -60,9 +97,8 @@ class StoreAddressContactSection extends StatelessWidget {
                 isInset: true,
                 padding: const EdgeInsets.all(12),
                 child: TextField(
-                  controller: TextEditingController(
-                    text: 'Jl. Senopati No. 42, RT.05/RW.02, Selong, Kebayoran Baru, Jakarta Selatan, DKI Jakarta 12110',
-                  ),
+                  controller: _address,
+                  onChanged: (v) => _setDraft('address', v),
                   maxLines: 3,
                   decoration: const InputDecoration(border: InputBorder.none, isDense: true),
                   style: const TextStyle(
@@ -84,13 +120,13 @@ class StoreAddressContactSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.pin_drop, size: 16, color: AppColors.primary),
-                    SizedBox(width: 6),
+                    const Icon(Icons.pin_drop, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
                     Text(
-                      'Koordinat GPS: -6.2285, 106.8091',
-                      style: TextStyle(
+                      'Koordinat GPS: ${store.latitude ?? '-'}, ${store.longitude ?? '-'}',
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: AppColors.onSurface,
@@ -146,17 +182,23 @@ class StoreAddressContactSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          _buildField('Kontak Telepon / WhatsApp Kasir', '0812-3456-7890', Icons.call),
+          _buildField('Kontak Telepon / WhatsApp Kasir', _phone, Icons.call, (v) => _setDraft('phone', v), keyboardType: TextInputType.phone),
           const SizedBox(height: 12),
-          _buildField('Email Outlet', 'senopati01@chickencrunchyroll.com', Icons.alternate_email, keyboardType: TextInputType.emailAddress),
+          _buildField('Email Outlet', _email, Icons.alternate_email, (v) => _setDraft('email', v), keyboardType: TextInputType.emailAddress),
           const SizedBox(height: 12),
-          _buildField('Media Sosial / Instagram Toko', '@chickencrunchyroll', Icons.share),
+          _buildField('Media Sosial / Instagram Toko', _instagram, Icons.share, (v) => _setDraft('instagram', v)),
         ],
       ),
     );
   }
 
-  Widget _buildField(String label, String value, IconData icon, {TextInputType? keyboardType}) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+    ValueChanged<String> onChanged, {
+    TextInputType? keyboardType,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,7 +221,8 @@ class StoreAddressContactSection extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  controller: TextEditingController(text: value),
+                  controller: controller,
+                  onChanged: onChanged,
                   keyboardType: keyboardType,
                   decoration: const InputDecoration(border: InputBorder.none, isDense: true),
                   style: const TextStyle(

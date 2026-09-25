@@ -28,7 +28,7 @@ class _PosLoginScreenState extends ConsumerState<PosLoginScreen> {
     final notifier = ref.read(cashierProvider.notifier);
 
     // If session is active, navigate to dashboard
-    if (session.isShiftActive) {
+    if (session.isLoggedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacement(
           AppRoute.fadeSlide(const PosDashboardScreen()),
@@ -122,6 +122,19 @@ class _PosLoginScreenState extends ConsumerState<PosLoginScreen> {
 
                     // PIN Entry Display
                     PinDisplay(pinLength: session.pinCode.length),
+                    if (session.errorMessage != null) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        session.errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
 
                     // Neomorphic Keypad
@@ -141,9 +154,9 @@ class _PosLoginScreenState extends ConsumerState<PosLoginScreen> {
                     // Bottom Shift Launch Action
                     ShiftLaunchButton(
                       isLoading: session.isLoading,
-                      isShiftActive: session.isShiftActive,
+                      isLoggedIn: session.isLoggedIn,
                       onPressed: () {
-                        notifier.startShift((success) {});
+                        notifier.login((success) {});
                       },
                     ),
                   ] else ...[

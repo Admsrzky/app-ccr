@@ -20,7 +20,7 @@ class PosDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final posState = ref.watch(posProvider);
     final posNotifier = ref.read(posProvider.notifier);
-    final filteredProducts = posNotifier.filteredProducts;
+    final filteredProducts = posState.filteredProducts;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -74,9 +74,34 @@ class PosDashboardScreen extends ConsumerWidget {
                           const SizedBox(height: 14),
                           // Category Tabs
                           CategoryTabs(
+                            categories: posState.categories,
                             selectedCategory: posState.selectedCategory,
                             onCategorySelected: (cat) => posNotifier.setCategory(cat),
                           ),
+                          if (posState.errorMessage != null) ...[
+                            const SizedBox(height: 10),
+                            NeomorphicContainer(
+                              borderRadius: 10,
+                              isInset: true,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.wifi_off, size: 14, color: AppColors.error),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      posState.errorMessage!,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -120,7 +145,7 @@ class PosDashboardScreen extends ConsumerWidget {
           if (posState.totalItemsCount() > 0)
             FloatingCartBar(
               totalItems: posState.totalItemsCount(),
-              totalPrice: posState.calculateTotal(posNotifier.products),
+              totalPrice: posState.calculateTotal(),
               onCheckout: () {
                 Navigator.push(
                   context,

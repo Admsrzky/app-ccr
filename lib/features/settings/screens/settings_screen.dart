@@ -11,12 +11,20 @@ import 'store_profile_screen.dart';
 import 'printer_settings_screen.dart';
 import '../widgets/cashier_profile_card.dart';
 import '../../pos_dashboard/providers/pos_provider.dart';
+import '../providers/store_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final store = ref.watch(storeProvider).store;
+    final printers = store.printers;
+    final activePrinters = printers.where((p) => p.isActive).toList();
+    final printerSummary = printers.isEmpty
+        ? 'Belum ada printer terdaftar'
+        : '${activePrinters.isEmpty ? 'Tidak aktif' : '${activePrinters.first.model} (${activePrinters.first.paperWidth}) • Connected'}'
+            '${printers.length > 1 ? ' +${printers.length - 1} lainnya' : ''}';
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -82,7 +90,7 @@ class SettingsScreen extends ConsumerWidget {
                             context,
                             Icons.store,
                             'Profil & Alamat Toko',
-                            'Jl. Senopati No. 42, Kebayoran Baru',
+                            store.address ?? 'Alamat belum diatur',
                             onTap: () => Navigator.push(
                               context,
                               AppRoute.fadeSlide(const StoreProfileScreen()),
@@ -93,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
                             context,
                             Icons.print,
                             'Printer Thermal & Struk',
-                            'Epson TM-T82X Bluetooth (80mm) • Connected',
+                            printerSummary,
                             onTap: () => Navigator.push(
                               context,
                               AppRoute.fadeSlide(const PrinterSettingsScreen()),

@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neomorphic_container.dart';
+import '../providers/store_provider.dart';
 
-class StoreBrandForm extends StatelessWidget {
+class StoreBrandForm extends ConsumerStatefulWidget {
   const StoreBrandForm({super.key});
+
+  @override
+  ConsumerState<StoreBrandForm> createState() => _StoreBrandFormState();
+}
+
+class _StoreBrandFormState extends ConsumerState<StoreBrandForm> {
+  late final TextEditingController _brandName;
+  late final TextEditingController _branchName;
+  late final TextEditingController _slogan;
+  late final TextEditingController _businessType;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(storeProvider);
+    _brandName = TextEditingController(text: state.displayValue('brandName'));
+    _branchName = TextEditingController(text: state.displayValue('branchName'));
+    _slogan = TextEditingController(text: state.displayValue('slogan'));
+    _businessType = TextEditingController(text: state.displayValue('businessType'));
+  }
+
+  @override
+  void dispose() {
+    _brandName.dispose();
+    _branchName.dispose();
+    _slogan.dispose();
+    _businessType.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +52,19 @@ class StoreBrandForm extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _buildTextField('Nama Usaha / Brand', 'Chicken Crunchy Roll', Icons.store),
+          _buildTextField('Nama Usaha / Brand', _brandName, Icons.store, (v) => ref.read(storeProvider.notifier).setDraft('brandName', v)),
           const SizedBox(height: 12),
-          _buildTextField('Nama Cabang / Outlet', 'Cabang Senopati 01', Icons.apartment),
+          _buildTextField('Nama Cabang / Outlet', _branchName, Icons.apartment, (v) => ref.read(storeProvider.notifier).setDraft('branchName', v)),
           const SizedBox(height: 12),
-          _buildTextField('Slogan / Tagline Cetak Struk', 'Crunchy, Cheesy, Happy!', Icons.format_quote),
+          _buildTextField('Slogan / Tagline Cetak Struk', _slogan, Icons.format_quote, (v) => ref.read(storeProvider.notifier).setDraft('slogan', v)),
           const SizedBox(height: 12),
-          _buildTextField('Kategori Usaha', 'Restoran Cepat Saji & Snack Roll', Icons.fastfood),
+          _buildTextField('Kategori Usaha', _businessType, Icons.fastfood, (v) => ref.read(storeProvider.notifier).setDraft('businessType', v)),
         ],
       ),
     );
   }
 
-  Widget _buildTextField(String label, String initialValue, IconData icon) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, ValueChanged<String> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,7 +80,8 @@ class StoreBrandForm extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  controller: TextEditingController(text: initialValue),
+                  controller: controller,
+                  onChanged: onChanged,
                   decoration: const InputDecoration(border: InputBorder.none),
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                 ),
